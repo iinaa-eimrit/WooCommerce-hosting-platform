@@ -50,6 +50,8 @@ spec:
           ports: [{ name: http, containerPort: 8080 }]
           readinessProbe: { httpGet: { path: /readyz, port: http }, periodSeconds: 5 }
           livenessProbe: { httpGet: { path: /healthz, port: http }, initialDelaySeconds: 10 }
+          resources: { requests: { cpu: 100m, memory: 256Mi }, limits: { cpu: "1", memory: 512Mi } }
+          securityContext: { allowPrivilegeEscalation: false, readOnlyRootFilesystem: true, capabilities: { drop: [ALL] } }
 ---
 apiVersion: v1
 kind: Service
@@ -70,6 +72,9 @@ spec:
           imagePullPolicy: {{ .Values.dashboard.image.pullPolicy }}
           ports: [{ name: http, containerPort: 8080 }]
           readinessProbe: { httpGet: { path: /, port: http } }
+          livenessProbe: { httpGet: { path: /, port: http }, initialDelaySeconds: 10 }
+          resources: { requests: { cpu: 50m, memory: 64Mi }, limits: { cpu: 250m, memory: 128Mi } }
+          securityContext: { allowPrivilegeEscalation: false, readOnlyRootFilesystem: true, capabilities: { drop: [ALL] } }
 ---
 apiVersion: v1
 kind: Service

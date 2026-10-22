@@ -1,0 +1,36 @@
+apiVersion: v1
+kind: ConfigMap
+metadata: { name: store-files }
+data:
+  setup.sh: |
+{{ .Files.Get "files/setup.sh" | indent 4 }}
+  urumi-mcp-auth.php: |
+{{ .Files.Get "files/urumi-mcp-auth.php" | indent 4 }}
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: store-setup
+  annotations: { "helm.sh/hook": post-install,post-upgrade, "helm.sh/hook-delete-policy": before-hook-creation }
+spec:
+  backoffLimit: 8
+  template:
+    spec:
+      restartPolicy: OnFailure
+      containers:
+        - name: setup
+          image: wordpress:cli-php8.3
+          command: [/bin/sh, /scripts/setup.sh]
+          env:
+            - { name: SITE_URL, value: {{ .Values.siteUrl | quote }} }
+            - { name: SITE_TITLE, value: {{ .Values.siteTitle | quote }} }
+            - { name: WP_ADMIN_USER, value: admin }
+            - { name: WP_ADMIN_EMAIL, value: admin@urumi.local }
+            - { name: WP_ADMIN_PASSWORD, valueFrom: { secretKeyRef: { name: {{ .Values.secrets.existingSecret }}, key: wp-admin-password } } }
+          volumeMounts:
+            - { name: wordpress, mountPath: /var/www/html }
+            - { name: scripts, mountPath: /scripts }
+          resources: { requests: { cpu: 100m, memory: 128Mi }, limits: { cpu: 500m, memory: 512Mi } }
+      volumes:
+        - { name: wordpress, persistentVolumeClaim: { claimName: wordpress-data } }
+        - { name: scripts, configMap: { name: store-files, defaultMode: 493 } }
