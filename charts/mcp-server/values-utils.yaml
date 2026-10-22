@@ -1,0 +1,4 @@
+image: { repository: urumi/utils-mcp, tag: dev }
+port: 3000
+secretName: utils-secrets
+secretKey: token

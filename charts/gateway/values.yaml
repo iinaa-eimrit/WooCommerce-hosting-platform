@@ -1,0 +1,7 @@
+host: gateway.localtest.me
+ingressClassName: traefik
+secrets: { existingSecret: gateway-secrets }
+backend: { image: { repository: urumi/gateway, tag: dev, pullPolicy: IfNotPresent } }
+dashboard: { image: { repository: urumi/dashboard, tag: dev, pullPolicy: IfNotPresent } }
+postgres: { image: postgres:16-alpine, storage: 2Gi }
+seedServers: '[{"slug":"woo","name":"WooCommerce","url":"http://woo-mcp.store.svc.cluster.local:3000/mcp","authType":"bearer"},{"slug":"utils","name":"Utils","url":"http://utils.mcp-upstreams.svc.cluster.local:3000/mcp","authType":"bearer"},{"slug":"everything","name":"Everything","url":"http://everything.mcp-upstreams.svc.cluster.local:3001/mcp","authType":"none"}]'

@@ -1,0 +1,8 @@
+siteUrl: http://store.localtest.me
+siteTitle: Urumi Store
+ingress: { host: store.localtest.me, className: traefik }
+secrets: { existingSecret: store-secrets }
+storage: { wordpressSize: 2Gi, mariadbSize: 2Gi }
+wordpress: { image: wordpress:6.8-php8.3-apache }
+mariadb: { image: mariadb:11.4 }
+wooMcp: { image: { repository: urumi/woo-mcp, tag: dev, pullPolicy: IfNotPresent } }

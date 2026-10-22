@@ -1,0 +1,2 @@
+siteUrl: http://store.localtest.me
+ingress: { host: store.localtest.me, className: traefik }

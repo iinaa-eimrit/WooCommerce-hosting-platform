@@ -1,0 +1,2 @@
+siteUrl: https://store.example.com
+ingress: { host: store.example.com, className: traefik }
