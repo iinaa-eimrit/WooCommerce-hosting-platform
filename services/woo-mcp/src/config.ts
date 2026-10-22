@@ -1,0 +1,2 @@
+function required(name: string): string { const value = process.env[name]; if (!value) throw new Error(`Missing env var ${name}`); return value; }
+export const config = { port: Number(process.env.PORT ?? 3000), wooBaseUrl: process.env.WOO_BASE_URL ?? 'http://wordpress.store.svc.cluster.local', storeToken: required('STORE_TOKEN'), inboundToken: process.env.MCP_INBOUND_TOKEN, requestTimeoutMs: Number(process.env.WOO_TIMEOUT_MS ?? 10_000) };

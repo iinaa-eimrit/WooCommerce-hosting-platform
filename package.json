@@ -1,0 +1,10 @@
+{
+  "name": "urumi-mcp-gateway",
+  "private": true,
+  "engines": { "node": ">=22" },
+  "scripts": {
+    "typecheck": "npm run typecheck --workspaces --if-present",
+    "test": "npm run test --workspaces --if-present"
+  },
+  "workspaces": ["services/*"]
+}
