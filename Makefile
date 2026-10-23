@@ -10,7 +10,7 @@ images:
 secrets:
 	./scripts/gen-secrets.sh $(ENV)
 deploy:
-	helm upgrade --install store charts/store -n store --create-namespace -f charts/store/values-$(ENV).yaml --set wooMcp.image.tag=$(TAG) --wait --timeout 15m
+	helm upgrade --install store charts/store -n store --create-namespace -f charts/store/values-$(ENV).yaml --set wooMcp.image.tag=$(TAG) --wait --wait-for-jobs --timeout 15m
 	helm upgrade --install utils charts/mcp-server -n mcp-upstreams --create-namespace -f charts/mcp-server/values-utils.yaml --set image.tag=$(TAG) --wait
 	helm upgrade --install everything charts/mcp-server -n mcp-upstreams -f charts/mcp-server/values-everything.yaml --set image.tag=$(TAG) --wait
 	helm upgrade --install gateway charts/gateway -n gateway --create-namespace -f charts/gateway/values-$(ENV).yaml --set backend.image.tag=$(TAG) --set dashboard.image.tag=$(TAG) --wait

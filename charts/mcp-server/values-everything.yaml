@@ -1,3 +1,4 @@
 image: { repository: urumi/everything-mcp, tag: dev }
 port: 3001
+probeType: tcp
 secretName: ''

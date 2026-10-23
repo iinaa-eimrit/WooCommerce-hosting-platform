@@ -22,6 +22,8 @@ spec:
             - { name: MARIADB_PASSWORD, valueFrom: { secretKeyRef: { name: {{ .Values.secrets.existingSecret }}, key: mariadb-password } } }
           ports: [{ containerPort: 3306 }]
           readinessProbe: { exec: { command: [healthcheck.sh, --connect] }, initialDelaySeconds: 10 }
+          livenessProbe: { exec: { command: [healthcheck.sh, --connect, --innodb_initialized] }, initialDelaySeconds: 60, periodSeconds: 20, failureThreshold: 6 }
+          resources: { requests: { cpu: 100m, memory: 256Mi }, limits: { cpu: 500m, memory: 512Mi } }
           volumeMounts: [{ name: data, mountPath: /var/lib/mysql }]
   volumeClaimTemplates: [{ metadata: { name: data }, spec: { accessModes: [ReadWriteOnce], resources: { requests: { storage: {{ .Values.storage.mariadbSize }} } } } }]
 ---
@@ -49,8 +51,9 @@ spec:
             - { name: WORDPRESS_DB_PASSWORD, valueFrom: { secretKeyRef: { name: {{ .Values.secrets.existingSecret }}, key: mariadb-password } } }
             - { name: MCP_STORE_TOKEN, valueFrom: { secretKeyRef: { name: {{ .Values.secrets.existingSecret }}, key: store-token } } }
           ports: [{ name: http, containerPort: 80 }]
-          readinessProbe: { httpGet: { path: /wp-json/, port: http }, initialDelaySeconds: 15, periodSeconds: 10 }
-          livenessProbe: { httpGet: { path: /wp-login.php, port: http }, initialDelaySeconds: 45, periodSeconds: 20 }
+          startupProbe: { httpGet: { path: /wp-login.php, port: http }, periodSeconds: 5, timeoutSeconds: 5, failureThreshold: 180 }
+          readinessProbe: { httpGet: { path: /wp-login.php, port: http }, periodSeconds: 10, timeoutSeconds: 5 }
+          livenessProbe: { httpGet: { path: /wp-login.php, port: http }, periodSeconds: 20, timeoutSeconds: 5, failureThreshold: 6 }
           resources: { requests: { cpu: 100m, memory: 256Mi }, limits: { cpu: "1", memory: 512Mi } }
           volumeMounts:
             - { name: data, mountPath: /var/www/html }

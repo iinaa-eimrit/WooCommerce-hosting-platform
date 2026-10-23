@@ -6,6 +6,9 @@ until wp db query 'SELECT 1' >/dev/null 2>&1; do sleep 5; done
 if ! wp core is-installed 2>/dev/null; then
   wp core install --url="$SITE_URL" --title="$SITE_TITLE" --admin_user="$WP_ADMIN_USER" --admin_password="$WP_ADMIN_PASSWORD" --admin_email="$WP_ADMIN_EMAIL" --skip-email
 fi
+wp option delete core_updater.lock || true
+wp core update --version="$WP_CORE_VERSION" --force
+wp core update-db
 wp option update timezone_string UTC
 wp rewrite structure '/%postname%/' --hard || true
 wp plugin is-installed woocommerce || wp plugin install woocommerce

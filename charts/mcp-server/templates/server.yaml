@@ -16,8 +16,13 @@ spec:
           {{- if .Values.secretName }}
           env: [{ name: MCP_INBOUND_TOKEN, valueFrom: { secretKeyRef: { name: {{ .Values.secretName }}, key: {{ .Values.secretKey }} } } }]
           {{- end }}
+          {{- if eq .Values.probeType "tcp" }}
+          readinessProbe: { tcpSocket: { port: http }, periodSeconds: 5 }
+          livenessProbe: { tcpSocket: { port: http }, initialDelaySeconds: 10 }
+          {{- else }}
           readinessProbe: { httpGet: { path: /readyz, port: http }, periodSeconds: 5 }
           livenessProbe: { httpGet: { path: /healthz, port: http }, initialDelaySeconds: 10 }
+          {{- end }}
           resources: {{- toYaml .Values.resources | nindent 12 }}
           securityContext: { allowPrivilegeEscalation: false, readOnlyRootFilesystem: true, capabilities: { drop: [ALL] } }
 ---
