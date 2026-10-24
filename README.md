@@ -14,13 +14,13 @@ Prerequisites: Docker, Node 22+, `kubectl`, Helm 3 and k3d.
 
 ```sh
 make cluster
-make secrets        # enter an optional OpenAI-compatible LLM key
+make secrets        # optionally enter an OpenAI-compatible LLM API key
 make up
 ```
 
 Open `http://gateway.localtest.me` for the dashboard and `http://store.localtest.me` for WordPress. `localtest.me` resolves to 127.0.0.1; if DNS rebinding is blocked, map both hosts in `/etc/hosts`.
 
-The initial dashboard credentials are printed by `make secrets`. Create an API key on the Keys page, then point an MCP client at `http://gateway.localtest.me/mcp` with `Authorization: Bearer urm_...`.
+The initial dashboard email is shown by `make secrets`; its password is kept in the ignored `.secrets/local.env` file. `make secrets` can be rerun after updating that file to apply changed credentials. The optional LLM key is also stored there and applied to the gateway Secret. Create an API key on the Keys page, then point an MCP client at `http://gateway.localtest.me/mcp` with `Authorization: Bearer urm_...`.
 
 ## Development and verification
 
