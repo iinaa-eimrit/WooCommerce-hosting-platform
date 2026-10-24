@@ -1,7 +1,7 @@
 host: gateway.localtest.me
 ingressClassName: traefik
 cookieSecure: true
-llm: { model: llama-3.3-70b-versatile, baseURL: "" }
+llm: { model: llama-3.3-70b-versatile, baseURL: "", reasoningEffort: "" }
 secrets: { existingSecret: gateway-secrets }
 backend: { image: { repository: urumi/gateway, tag: dev, pullPolicy: IfNotPresent } }
 dashboard: { image: { repository: urumi/dashboard, tag: dev, pullPolicy: IfNotPresent } }

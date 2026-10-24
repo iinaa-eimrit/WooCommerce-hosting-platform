@@ -51,6 +51,9 @@ spec:
             {{- if .Values.llm.baseURL }}
             - { name: LLM_BASE_URL, value: {{ .Values.llm.baseURL | quote }} }
             {{- end }}
+            {{- if .Values.llm.reasoningEffort }}
+            - { name: LLM_REASONING_EFFORT, value: {{ .Values.llm.reasoningEffort | quote }} }
+            {{- end }}
             - { name: COOKIE_SECURE, value: {{ .Values.cookieSecure | quote }} }
             - { name: SEED_CRED_WOO, valueFrom: { secretKeyRef: { name: {{ .Values.secrets.existingSecret }}, key: woo-mcp-token } } }
             - { name: SEED_CRED_UTILS, valueFrom: { secretKeyRef: { name: {{ .Values.secrets.existingSecret }}, key: utils-token } } }
