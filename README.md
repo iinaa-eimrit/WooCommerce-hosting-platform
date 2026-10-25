@@ -40,6 +40,19 @@ claude mcp add --transport http urumi http://gateway.localtest.me/mcp \
 
 The gateway exposes tools as `<server-slug>__<tool-name>` (for example, `woo__list_products`). After an admin disables an upstream, reconnect a client to refresh its tool list; calls to disabled tools are rejected server-side regardless of a stale client cache. A raw HTTP smoke test is also available as `API_KEY=urm_... ./scripts/dod-smoke.sh`.
 
+### Provision another store
+
+After the base cluster, store, and gateway are running, provision a second isolated WooCommerce store and register it with the gateway:
+
+```sh
+set -a
+source .secrets/local.env
+set +a
+./scripts/provision-store.sh outlet outlet.localtest.me "Urumi Outlet"
+```
+
+The script creates namespace `store-outlet`, generates separate store/database credentials, deploys the store using the same Woo MCP image as the base store, and registers `outlet` as a Bearer-authenticated gateway upstream. The admin credentials are read from the environment loaded from the ignored local secrets file. Avoid displaying that environment or secret values while recording. Open `http://outlet.localtest.me`; the gateway exposes the new tools as `outlet__list_products`, `outlet__create_product`, and so on. Set `URUMI_GATEWAY_URL` if the dashboard uses a different address. The same chart can be used for production by adapting its values and image settings; this helper targets the existing cluster and default Secret names.
+
 ## Development and verification
 
 ```sh

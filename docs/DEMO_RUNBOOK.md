@@ -50,7 +50,7 @@ Explain the `store`, `gateway`, and `mcp-upstreams` namespaces, persistent stora
    ```
 
    Keep the key out of the video frame and revoke it after the demo. Show the client listing namespaced tools and asking the same orders question. Then ask for a task requiring two upstreams, such as converting an order total, and show the WooCommerce and Utils tools in the call.
-6. As admin, revoke B's key. Show that B's next MCP request is rejected. Disable Utils and refresh the client's tool list; show Utils tools disappear. Re-enable Utils after capturing the evidence.
+6. As admin, revoke B's key and show that B's next MCP request is rejected. For the Utils check, switch the client to a different valid key (for example, A's key), disable Utils, and refresh the tool list; show that `utils__` tools disappear. Re-enable Utils after capturing the evidence.
 7. Simulate an upstream outage and show isolation:
 
    ```sh
@@ -82,6 +82,19 @@ Show `charts/store/values-local.yaml` vs `charts/store/values-prod.yaml`, `chart
 > “The production setup uses the same Helm charts. The values change the public hosts and store URL, TLS, image registry and tags, and storage settings; production Secrets are applied to the cluster and are not committed. I prepared the k3s deployment path and IP-based `sslip.io` hosts, so a purchased domain is not required. I could not provision a free public VPS because the provider required credit-card verification, so I have not claimed a live VPS deployment. The local k3d deployment is running, and these are the documented production steps.”
 
 Show the GHCR publish/deploy commands from README. Explain that before a real upgrade you would back up persistent data, publish a new immutable image tag, run `helm upgrade`, check `helm history`, and use `helm rollback` if needed. Be clear that Helm rollback does not reverse database or store-content changes.
+
+### Optional — Multi-store bonus
+
+Load the local admin settings into the shell without displaying them, then provision a second store:
+
+```sh
+set -a
+source .secrets/local.env
+set +a
+./scripts/provision-store.sh bonus bonus-store.localtest.me "Urumi Bonus Store"
+```
+
+The script waits for the independent WordPress/MariaDB deployment, registers its Woo MCP service with the gateway, and waits for five tools to connect. Open `http://bonus-store.localtest.me`, then the dashboard's **Servers** page to show `bonus` connected. Use a valid MCP API key to list tools and call `bonus__list_products`; compare product URLs with `woo__list_products` to show the stores remain separate. Do not display the shell environment or Secret values in the recording.
 
 ## After recording
 
