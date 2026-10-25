@@ -1,6 +1,6 @@
 siteUrl: http://store.localtest.me
 siteTitle: Urumi Store
-ingress: { host: store.localtest.me, className: traefik }
+ingress: { host: store.localtest.me, className: traefik, tls: { enabled: false, secretName: "" } }
 secrets: { existingSecret: store-secrets }
 storage: { wordpressSize: 2Gi, mariadbSize: 2Gi }
 wordpress: { image: wordpress:7.1.3-php8.3-apache, version: "7.1.3" }

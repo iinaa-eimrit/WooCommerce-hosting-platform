@@ -1,1 +1,2 @@
 host: gateway.example.com
+tls: { enabled: true, secretName: gateway-tls }

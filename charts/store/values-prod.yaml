@@ -1,2 +1,5 @@
 siteUrl: https://store.example.com
-ingress: { host: store.example.com, className: traefik }
+ingress:
+  host: store.example.com
+  className: traefik
+  tls: { enabled: true, secretName: store-tls }
