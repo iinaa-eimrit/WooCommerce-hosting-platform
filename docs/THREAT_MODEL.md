@@ -10,6 +10,8 @@ A member can invoke any tool exposed by an enabled upstream using the authority 
 
 Mitigations in this implementation are a dedicated least-privilege WooCommerce service account, encrypted upstream credentials at rest, server-side-only credential attachment, per-user gateway keys, immediate key revocation, and audit attribution. Per-tool authorization is not implemented; destructive tools are therefore available to members who can call the WooCommerce upstream.
 
+Team invitation links are bearer tokens: anyone holding an unexpired link can claim that member invitation and set its password. Tokens are random, stored only as SHA-256 hashes, expire after seven days, and can be accepted once. Admins should share links only with the intended invitee and through a trusted channel.
+
 ## 2. Why are client tokens not passed through to upstreams?
 
 A gateway API key is intended for the gateway audience, not for every upstream. Passing it along would disclose a reusable credential to an upstream that may be compromised or malicious, and could enable replay against the gateway or another service. Upstreams also do not have the gateway's user/key database and cannot validate its revocation rules. The gateway authenticates the caller, records the caller identity, and uses its own configured credential for the selected upstream. Chat uses a short-lived internal JWT scoped to the gateway's chat MCP audience and also does not forward the browser session cookie.

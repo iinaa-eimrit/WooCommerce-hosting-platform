@@ -27,7 +27,7 @@ The dashboard email is shown by `make secrets`; its password and the optional LL
 1. In the storefront, open **Shop**, add the Urumi Hoodie to the cart, and check out with **Cash on delivery**. Use test contact details; the local store has no real payment processor.
 2. In the dashboard, sign in with the credentials from `.secrets/local.env`. The Servers page should show WooCommerce, Utils and Everything.
 3. On the Chat page, ask it to create a product, then ask what orders arrived today. The response includes the MCP tools called. Chat is unavailable if no `LLM_API_KEY` is configured.
-4. On Team, an admin can add a member with a temporary password. This starter implementation creates the account directly; it does not send invitation email.
+4. On Team, an admin can create a one-time invite link for a member. Share it out of band; the invitee sets their own password. Links expire after seven days, and the app does not send invitation email.
 
 ### Connect an external MCP client
 

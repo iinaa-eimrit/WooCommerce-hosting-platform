@@ -14,7 +14,7 @@ Each upstream has a unique slug. Exposed tool names use the reversible form `<sl
 
 The gateway opens one MCP client connection per configured upstream per backend replica. Health refreshes currently check servers sequentially, so refresh latency can grow with the number of slow upstreams. The public MCP transport is stateless and authenticates every request, but upstream connections and cached catalogues are local to each replica; horizontal scaling therefore needs validation and does not provide catalogue push notifications. Clients must reconnect or refresh after tool-list changes.
 
-Audit writes are best-effort: a tool result is returned even if PostgreSQL rejects its audit insert, with the failure logged by the gateway. Member and chat tool results are not automatically retried. Team members are added directly with a password by an admin; invitation email delivery is not implemented.
+Audit writes are best-effort: a tool result is returned even if PostgreSQL rejects its audit insert, with the failure logged by the gateway. Member and chat tool results are not automatically retried. Admins create seven-day, single-use invitation links; invitees set their own password. Invitation email delivery is not implemented, so links must be shared out of band.
 
 ## Credential flow
 
