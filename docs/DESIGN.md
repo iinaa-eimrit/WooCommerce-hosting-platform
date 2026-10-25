@@ -22,6 +22,6 @@ API keys are returned once at creation and stored as SHA-256 hashes. The gateway
 
 ## Production changes
 
-The local and production Helm charts share the same templates. Values change the public hosts and WordPress site URL, enable Ingress TLS, select image registry/tags, and tune storage. A production cluster must provide reachable immutable images, a StorageClass, DNS, TLS Secrets (or cert-manager integration), and Kubernetes Secrets from an external secret manager. The current charts reference TLS Secrets but do not issue certificates themselves. The VPS path is documented but has not yet been deployed or tested here.
+The local and production Helm charts share the same templates. Values change the public hosts and WordPress site URL, enable Ingress TLS, select image registry/tags, and tune storage. A production cluster must provide reachable immutable images, a StorageClass, routable hostnames, cert-manager with a ClusterIssuer (or pre-created TLS Secrets), and Kubernetes Secrets from an external secret manager. Production Ingress annotations request certificates from the `letsencrypt` ClusterIssuer; certificate issuance depends on public HTTP access for ACME validation. The VPS path is documented but has not yet been deployed or tested here.
 
 Before upgrades, back up PostgreSQL and the WordPress/MariaDB persistent volumes. Helm rollback restores Kubernetes manifests and image references; it does not reverse database migrations or store content changes.

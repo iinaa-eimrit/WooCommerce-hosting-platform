@@ -2,4 +2,6 @@ siteUrl: https://store.example.com
 ingress:
   host: store.example.com
   className: traefik
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt
   tls: { enabled: true, secretName: store-tls }

@@ -1,2 +1,4 @@
 host: gateway.example.com
+ingressAnnotations:
+  cert-manager.io/cluster-issuer: letsencrypt
 tls: { enabled: true, secretName: gateway-tls }

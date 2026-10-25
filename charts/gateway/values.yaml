@@ -1,5 +1,6 @@
 host: gateway.localtest.me
 ingressClassName: traefik
+ingressAnnotations: {}
 tls: { enabled: false, secretName: "" }
 cookieSecure: true
 llm: { model: llama-3.3-70b-versatile, baseURL: "", reasoningEffort: "" }

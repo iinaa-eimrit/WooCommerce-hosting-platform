@@ -50,12 +50,97 @@ API_KEY=urm_xxx ./scripts/dod-smoke.sh
 
 Every service provides `/healthz` and `/readyz`. Secrets are generated in `.secrets/`, which is ignored by Git. See [DESIGN.md](docs/DESIGN.md) and [THREAT_MODEL.md](docs/THREAT_MODEL.md) for tradeoffs and security controls.
 
-## Production-like k3s
+## Production-like k3s (no purchased domain required)
 
-The `values-prod.yaml` files set example public hosts and opt into TLS using existing `store-tls` and `gateway-tls` Secrets. Point DNS at a k3s VPS with Traefik, provision those TLS Secrets (for example, with cert-manager), and provide every required Secret in the namespace that consumes it. Do not commit production credentials or certificate data.
+Use free IP-based hostnames from `sslip.io`, such as `store.203.0.113.10.sslip.io` and `gateway.203.0.113.10.sslip.io` (replace the example IP with the VPS public IPv4). They resolve to the embedded IP. The production Ingresses request `store-tls` and `gateway-tls` certificates through cert-manager and Let's Encrypt. Keep HTTP port 80 open for ACME HTTP-01 validation.
 
-Build and push the five images to a registry reachable by the VPS, then deploy the same charts with registry overrides. For example, set the `wooMcp.image`, `backend.image` and `dashboard.image` repositories/tags on the store and gateway releases, and `image.repository`/`image.tag` on the utils/everything MCP releases. Keep image tags immutable. Ensure the VPS storage class supports the MariaDB, WordPress and Postgres PVCs. The charts reference pre-created Kubernetes Secrets rather than generating credentials during upgrades.
+### 1. Create the VPS and connect kubectl
 
-Local-to-VPS differences are values and infrastructure: hostnames/site URL, TLS Secrets, image registry/tags, storage class/size, and externally managed Secrets. No VPS deployment has been performed for this repository yet. For an upgrade, apply the new image tag with `helm upgrade`; inspect the rollout before proceeding to the next release. Roll back a release with `helm rollback <release> <previous-revision> -n <namespace>`. Back up persistent volumes and the database before upgrades; Helm rollback does not undo database or WordPress content changes.
+Create an Ubuntu VM with at least 2 vCPU and 4 GB RAM. An ARM64 VM is fine if available. Open inbound TCP ports 22, 80 and 443 in the cloud firewall. Install k3s, which includes Traefik and local-path storage:
 
+```sh
+curl -sfL https://get.k3s.io | sh -
+sudo cat /etc/rancher/k3s/k3s.yaml
+```
+
+Copy the kubeconfig to your laptop as `~/.kube/urumi-vps`, replace the API server address `127.0.0.1` with the VPS public IP, and run `chmod 600 ~/.kube/urumi-vps`. Verify with `KUBECONFIG="$HOME/.kube/urumi-vps" kubectl get nodes`.
+
+### 2. Install cert-manager and create the Let's Encrypt issuer
+
+Run these commands from your laptop against the VPS cluster:
+
+```sh
+export KUBECONFIG="$HOME/.kube/urumi-vps"
+helm repo add jetstack https://charts.jetstack.io --force-update
+helm repo update
+helm upgrade --install cert-manager jetstack/cert-manager \
+  --namespace cert-manager --create-namespace --set crds.enabled=true --wait
+```
+
+Save this as `letsencrypt-issuer.yaml`, replacing the email with one you can access, then apply it with `kubectl apply -f letsencrypt-issuer.yaml`:
+
+```yaml
+apiVersion: cert-manager.io/v1
+kind: ClusterIssuer
+metadata:
+  name: letsencrypt
+spec:
+  acme:
+    email: you@example.com
+    server: https://acme-v02.api.letsencrypt.org/directory
+    privateKeySecretRef:
+      name: letsencrypt-account-key
+    solvers:
+      - http01:
+          ingress:
+            ingressClassName: traefik
+```
+
+### 3. Publish ARM64-compatible images
+
+Create a GitHub token with package write permission. Log Docker into GHCR interactively so the token is not stored in shell history:
+
+```sh
+docker login ghcr.io -u YOUR_GITHUB_USERNAME
+```
+
+Publish immutable tags for both common VPS architectures. Use a lowercase GHCR namespace:
+
+```sh
+export REGISTRY="ghcr.io/YOUR_GITHUB_USERNAME/urumi"
+make publish REGISTRY="$REGISTRY" TAG=v1 PLATFORMS=linux/amd64,linux/arm64
+```
+
+Make the five GHCR packages public for the simplest VPS image pulls, or configure an image pull Secret in each namespace if the packages are private.
+
+### 4. Set hostnames and production secrets
+
+Replace `203.0.113.10` with the VPS public IPv4. Keep the IP dots in the hostname:
+
+```sh
+export IP="203.0.113.10"
+export STORE_HOST="store.$IP.sslip.io"
+export GATEWAY_HOST="gateway.$IP.sslip.io"
+```
+
+Generate fresh production credentials and apply Kubernetes Secrets to the VPS. The script prompts for the model API key and stores credentials in the ignored `.secrets/prod.env`; keep that file private and use a newly rotated model key:
+
+```sh
+KUBECONFIG="$HOME/.kube/urumi-vps" ./scripts/gen-secrets.sh prod
+```
+
+### 5. Deploy and verify
+
+```sh
+KUBECONFIG="$HOME/.kube/urumi-vps" make deploy ENV=prod \
+  REGISTRY="$REGISTRY" TAG=v1 STORE_HOST="$STORE_HOST" GATEWAY_HOST="$GATEWAY_HOST"
+KUBECONFIG="$HOME/.kube/urumi-vps" kubectl get pods,pvc,ingress -A
+KUBECONFIG="$HOME/.kube/urumi-vps" kubectl get certificates -A
+```
+
+Wait until both certificates are `Ready`, then visit `https://$STORE_HOST` and `https://$GATEWAY_HOST`. Sign in using the admin credentials stored in `.secrets/prod.env`; verify the Servers page, chat and an MCP call. Keep hostnames stable after certificates are issued.
+
+The Makefile sets image repositories for all five releases. For upgrades, publish a new immutable tag and redeploy with that tag. Use `helm history <release> -n <namespace>` and `helm rollback <release> <revision> -n <namespace>`. Back up the database and persistent volumes first: a Helm rollback does not reverse data changes. This VPS path has not yet been run for this repository.
+
+Local-to-VPS differences are hostnames/site URL, TLS, image registry/tags, storage class/size, and externally managed Secrets.
 See [DESIGN.md](docs/DESIGN.md), [THREAT_MODEL.md](docs/THREAT_MODEL.md), and [BONUS.md](docs/BONUS.md) for implementation boundaries and tradeoffs.
